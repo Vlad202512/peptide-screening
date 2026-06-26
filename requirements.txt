@@ -1,9 +1,9 @@
-streamlit 
-torch 
-transformers 
-pandas 
-numpy 
-requests 
-huggingface-hub 
-protobuf 
+streamlit
+torch
+transformers
+pandas
+numpy
+requests
+huggingface-hub
+protobuf
 sentencepiece
