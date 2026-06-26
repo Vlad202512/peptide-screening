@@ -37,9 +37,8 @@ top_n = st.sidebar.number_input("输出Top几", value=10, min_value=5, max_value
 
 content_threshold = st.sidebar.number_input("蛋白含量阈值(%)", value=10, min_value=0, max_value=100)
 
-# ===== 生成缓存文件名（根据当前参数自动切换） =====
+# ===== 生成缓存文件名 =====
 def get_cache_key():
-    """根据靶点+酶切规则+长度范围生成唯一标识"""
     raw = f"{drug}_{CUT}_{min_len}_{max_len}"
     return hashlib.md5(raw.encode()).hexdigest()[:8]
 
@@ -196,7 +195,7 @@ if st.button("开始筛选", type="primary"):
             unip.append(x)
     st.info(f"酶切并去重后共 {len(unip)} 条候选肽")
 
-    # AI打分（智能缓存：根据当前参数自动切换缓存文件）
+    # AI打分（智能缓存）
     cache_key = get_cache_key()
     score_cache_file = f"score_cache_{cache_key}.pkl"
 
@@ -235,13 +234,15 @@ if st.button("开始筛选", type="primary"):
     # 排序
     res.sort(key=lambda x: x["score"], reverse=True)
 
-    # 显示Top结果
+    # 显示Top结果（限制显示行数，避免内存溢出）
     st.subheader("结构相似度排名")
     df_top = pd.DataFrame(res[:top_n])
     show_cols = ["src", "p", "score"]
     if "content_pct" in df_top.columns:
         show_cols.append("content_pct")
-    st.dataframe(df_top[show_cols], width='stretch')
+    max_display_rows = 100
+    st.caption(f"显示前 {min(top_n, max_display_rows)} 条结果（共 {top_n} 条）")
+    st.dataframe(df_top[show_cols].head(max_display_rows), width='stretch')
 
     # 下载按钮
     csv_top = df_top.to_csv(index=False).encode("utf-8-sig")
@@ -268,7 +269,7 @@ if st.button("开始筛选", type="primary"):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.dataframe(species_df, width='stretch')
+        st.dataframe(species_df.head(20), width='stretch')
     with col2:
         st.bar_chart(species_df.set_index("物种"))
 
