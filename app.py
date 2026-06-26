@@ -7,10 +7,29 @@ import requests
 import os
 import pickle
 import hashlib
+import time
+import threading
 
 # ===== 页面设置 =====
 st.set_page_config(page_title="多肽虚拟筛选工具", layout="wide")
 st.title("多肽虚拟筛选工具")
+
+# ===== 防休眠机制 =====
+def keep_alive():
+    """每隔一段时间在后台执行一次轻量操作，防止应用被云平台冻结"""
+    while True:
+        time.sleep(300)  # 每5分钟
+        try:
+            # 对内存中一个极小的数据进行一次无意义的访问，只是为了表明“我还活着”
+            _ = st.session_state.get("_", None)
+        except Exception:
+            pass
+
+# 启动后台保活线程
+if "alive_thread" not in st.session_state:
+    alive_thread = threading.Thread(target=keep_alive, daemon=True)
+    alive_thread.start()
+    st.session_state.alive_thread = True
 
 # ===== 侧边栏参数 =====
 st.sidebar.header("筛选参数")
