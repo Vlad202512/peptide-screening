@@ -7,3 +7,4 @@ requests
 huggingface-hub
 protobuf
 sentencepiece
+torchvision
