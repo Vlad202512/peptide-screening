@@ -46,17 +46,16 @@ def get_cache_key():
 # ===== 核心函数 =====
 @st.cache_resource
 def load_model():
-    with st.spinner("正在加载ProtBERT模型（首次需要下载约400MB）..."):
+    with st.spinner("正在加载ProtBERT模型..."):
         model_name = "Rostlab/prot_bert"
         try:
-            # 先尝试从云端下载/加载模型
-            tok = BertTokenizer.from_pretrained(model_name)
-            mod = BertModel.from_pretrained(model_name)
-        except Exception:
-            # 如果云端连接失败，回退到使用本地缓存
             tok = BertTokenizer.from_pretrained(model_name, local_files_only=True)
             mod = BertModel.from_pretrained(model_name, local_files_only=True)
+        except Exception:
+            tok = BertTokenizer.from_pretrained(model_name)
+            mod = BertModel.from_pretrained(model_name)
     return tok, mod
+
 
 def cut(seq, cut_aa, min_l, max_l):
     out = []
@@ -242,7 +241,7 @@ if st.button("开始筛选", type="primary"):
     show_cols = ["src", "p", "score"]
     if "content_pct" in df_top.columns:
         show_cols.append("content_pct")
-    st.dataframe(df_top[show_cols], use_container_width=True)
+    st.dataframe(df_top[show_cols], width='stretch')
 
     # 下载按钮
     csv_top = df_top.to_csv(index=False).encode("utf-8-sig")
@@ -269,7 +268,7 @@ if st.button("开始筛选", type="primary"):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.dataframe(species_df, use_container_width=True)
+        st.dataframe(species_df, width='stretch')
     with col2:
         st.bar_chart(species_df.set_index("物种"))
 
