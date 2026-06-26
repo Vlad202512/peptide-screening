@@ -46,12 +46,17 @@ def get_cache_key():
 # ===== 核心函数 =====
 @st.cache_resource
 def load_model():
-    with st.spinner("正在加载ProtBERT模型..."):
+    with st.spinner("正在加载ProtBERT模型（首次需要下载约400MB）..."):
         model_name = "Rostlab/prot_bert"
-        tok = BertTokenizer.from_pretrained(model_name, local_files_only=True)
-        mod = BertModel.from_pretrained(model_name, local_files_only=True)
+        try:
+            # 先尝试从云端下载/加载模型
+            tok = BertTokenizer.from_pretrained(model_name)
+            mod = BertModel.from_pretrained(model_name)
+        except Exception:
+            # 如果云端连接失败，回退到使用本地缓存
+            tok = BertTokenizer.from_pretrained(model_name, local_files_only=True)
+            mod = BertModel.from_pretrained(model_name, local_files_only=True)
     return tok, mod
-
 
 def cut(seq, cut_aa, min_l, max_l):
     out = []
